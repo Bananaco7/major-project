@@ -1,16 +1,25 @@
 // player in grid
 
-const ROWS = 20;
-const COLS = 20;
+let ROWS; 
+let COLS;
 let grid, cellWidth, cellHeight;
+let sidePadding;
+let topPadding;
+let gridHeight;
+let gridWidth;
 
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-
+  gridHeight = windowHeight * 0.90;
+  gridWidth = windowWidth *0.28;
+  sidePadding = (windowWidth - gridWidth)/2;
+  topPadding = (windowHeight - gridHeight)/2;
+  COLS = 10;
+  ROWS = 20;
+  cellWidth = 40;
+  cellHeight = 40;
   grid = createEmptyGrid(COLS, ROWS);
-  cellWidth = width / COLS;
-  cellHeight = height / ROWS;
 }
 
 function draw() {
@@ -25,13 +34,7 @@ function displayGrid() {
       if (grid[y][x] === 0){
         fill("white");
       }
-      else if (grid[y][x] === 1) {
-        fill("black");
-      }
-      else if (grid[y][x] === 9) {
-        fill("red");
-      }
-      rect(x*cellWidth, y*cellHeight, cellWidth, cellHeight);
+      rect(x*cellWidth + sidePadding, y*cellHeight + topPadding, cellWidth, cellHeight);
     }
   }
 }
