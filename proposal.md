@@ -1,5 +1,5 @@
 # Proposal TETRIS
-I want to create a basic version of tetris with all the base elements which I mention in the "Needs To Have" Section. I am not too sure what 
+I want to create a basic version of tetris with all the base elements which I mention in the "Needs To Have" Section.  
 
 ## Needs To Have
 - The basic elements of tetris
