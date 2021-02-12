@@ -9,9 +9,11 @@ let gridHeight;
 let gridWidth;
 let rightKey = false;
 let leftKey = false;
-let dropping = false;
+let dropping = true;
+let createBlock = false;
 let dropTime;
 let yCor = 0;
+let xCor = 0;
 let iBlock;
 
 
@@ -97,7 +99,7 @@ function createEmptyGrid(cols, rows) {
 function blockDrop() {
   if (dropping) {
     dropTime = millis();
-    if (millis % 500 === 0) {
+    if (dropTime % 500 === 0) {
       yCor++;
     }
   }
@@ -106,9 +108,16 @@ function blockDrop() {
 function keyPressed() {
   if (keyCode === RIGHT_ARROW) {
     rightKey = true;
+    xCor++;
+    createBlock = true;
   }
   if (keyCode === LEFT_ARROW) {
     leftKey = true;
+    xCor--;
+    createBlock = true;
+  }
+  if (keyCode === ENTER) {
+    createBlock = true;
   }
 }
 function drop() {
@@ -117,11 +126,27 @@ function drop() {
 
 function iBlockCreate() {
   //I-Block creation 
-  for (let i = 0; i < iBlock.length; i++) {
-    for (let j = 0; j < iBlock[i].length; j++) {
-      if (iBlock[i][j] === 1) {
-        
-      }
+  let initialX = xCor
+  if (createBlock) {
+    if (grid[yCor][xCor] === 1 && rightKey) {
+      grid[yCor][xCor] = 0;
+      console.log("yes");
     }
+    if (grid[yCor][xCor+5] === 1 && leftKey) {
+      grid[yCor][xCor+5] = 0;
+      console.log("works");
+    }
+    for (let i = 0; i < iBlock.length; i++) {
+      for (let j = 0; j < iBlock[i].length; j++) {
+        xCor++;
+        if (iBlock[i][j] === 1) {
+          grid[yCor][xCor] = 1;
+        }
+      }
+      xCor = initialX;
+    }
+  createBlock = false;
+  rightKey = false;
+  leftKey = false;
   }
 }
