@@ -14,11 +14,18 @@ let createBlock = false;
 let dropTime;
 let yCor = 0;
 let xCor = 0;
-let iBlock;
+let iBlock, lBlock, jBlock, zBlock, sBlock, oBlock;
+
 
 
 function setup() {
   iBlock = [[1, 1, 1, 1]];
+  lBlock = [[0, 0, 0, 1], [0, 1, 1, 1]];
+  jBlock = [[0, 1, 0, 0], [0, 1, 1, 1]];
+  zBlock = [[1, 1, 0, 0], [0, 1, 1, 0]];
+  sBlock = [[0, 1, 1, 0], [1, 1, 0, 0]];
+  oBlock = [[1, 1, 0, 0], [1, 1, 0, 0]];
+  tBlock = [[0, 1, 0, 0], [1, 1, 1, 0]];
   createCanvas(windowWidth, windowHeight);
 
   //creating the grid dimesions for tetris
@@ -39,8 +46,14 @@ function setup() {
 function draw() {
   background(220);
   displayGrid();
-  iBlockCreate();
+  // iBlockCreate();
   blockDrop();
+  // lBlockCreate();
+  // jBlockCreate();
+  // zBlockCreate();
+  // sBlockCreate();
+  // oBlockCreate();
+  // tblockCreate();
 }
 
 
@@ -99,8 +112,10 @@ function createEmptyGrid(cols, rows) {
 function blockDrop() {
   if (dropping) {
     dropTime = millis();
-    if (dropTime % 500 === 0) {
+    if (dropTime % 2 === 0) {
+      console.log("happened");
       yCor++;
+      createBlock === true;
     }
   }
 }
@@ -108,8 +123,8 @@ function blockDrop() {
 function keyPressed() {
   if (keyCode === RIGHT_ARROW) {
     rightKey = true;
-    xCor++;
     createBlock = true;
+    xCor++;
   }
   if (keyCode === LEFT_ARROW) {
     leftKey = true;
@@ -126,15 +141,13 @@ function drop() {
 
 function iBlockCreate() {
   //I-Block creation 
-  let initialX = xCor
+  let initialX = xCor;
   if (createBlock) {
     if (grid[yCor][xCor] === 1 && rightKey) {
       grid[yCor][xCor] = 0;
-      console.log("yes");
     }
     if (grid[yCor][xCor+5] === 1 && leftKey) {
       grid[yCor][xCor+5] = 0;
-      console.log("works");
     }
     for (let i = 0; i < iBlock.length; i++) {
       for (let j = 0; j < iBlock[i].length; j++) {
@@ -145,8 +158,195 @@ function iBlockCreate() {
       }
       xCor = initialX;
     }
+  }
   createBlock = false;
   rightKey = false;
   leftKey = false;
-  }
 }
+
+function lBlockCreate() {
+  let initialX = xCor;
+  let initialY = yCor;
+  if (createBlock) {
+    if (rightKey) {
+      grid[yCor][xCor + 3] = 0;
+      grid[yCor + 1][xCor + 1] = 0;
+    }
+    if (leftKey) {
+      grid[yCor][xCor+5] = 0;
+      grid[yCor + 1][xCor + 5] = 0;
+    }
+    for (let i = 0; i < lBlock.length; i++) {
+      if (i > 0) {
+        yCor++;
+      }
+      for (let j = 0; j < lBlock[i].length; j++) {
+        xCor++;
+        if (lBlock[i][j] === 1) {
+          grid[yCor][xCor] = 2;
+        }
+      }
+      xCor = initialX;
+      yCor = initialY;
+    }
+  }
+  createBlock = false;
+  rightKey = false;
+  leftKey = false;
+}
+
+function jBlockCreate() {
+  let initialX = xCor;
+  let initialY = yCor;
+  if (createBlock) {
+    if (rightKey) {
+      grid[yCor][xCor + 1] = 0;
+      grid[yCor + 1][xCor + 1] = 0;
+    }
+    if (leftKey) {
+      grid[yCor][xCor + 3] = 0;
+      grid[yCor + 1][xCor + 5] = 0;
+    }
+    for (let i = 0; i < jBlock.length; i++) {
+      if (i > 0) {
+        yCor++;
+      }
+      for (let j = 0; j < jBlock[i].length; j++) {
+        xCor++;
+        if (jBlock[i][j] === 1) {
+          grid[yCor][xCor] = 3;
+        }
+      }
+      xCor = initialX;
+      yCor = initialY;
+    }
+  }
+  createBlock = false;
+  rightKey = false;
+  leftKey = false;
+}
+
+function zBlockCreate() {
+  let initialX = xCor;
+  let initialY = yCor;
+  if (createBlock) {
+    if (rightKey) {
+      grid[yCor][xCor] = 0;
+      grid[yCor + 1][xCor + 1] = 0;
+    }
+    if (leftKey) {
+      grid[yCor][xCor + 3] = 0;
+      grid[yCor + 1][xCor + 4] = 0;
+    }
+    for (let i = 0; i < zBlock.length; i++) {
+      if (i > 0) {
+        yCor++;
+      }
+      for (let j = 0; j < zBlock[i].length; j++) {
+        xCor++;
+        if (zBlock[i][j] === 1) {
+          grid[yCor][xCor] = 4;
+        }
+      }
+      xCor = initialX;
+      yCor = initialY;
+    }
+  }
+  createBlock = false;
+  rightKey = false;
+  leftKey = false;
+}
+
+function sBlockCreate() {
+  let initialX = xCor;
+  let initialY = yCor;
+  if (createBlock) {
+    if (rightKey) {
+      grid[yCor][xCor + 1] = 0;
+      grid[yCor + 1][xCor] = 0;
+    }
+    if (leftKey) {
+      grid[yCor][xCor + 4] = 0;
+      grid[yCor + 1][xCor + 3] = 0;
+    }
+    for (let i = 0; i < sBlock.length; i++) {
+      if (i > 0) {
+        yCor++;
+      }
+      for (let j = 0; j < sBlock[i].length; j++) {
+        xCor++;
+        if (sBlock[i][j] === 1) {
+          grid[yCor][xCor] = 5;
+        }
+      }
+      xCor = initialX;
+      yCor = initialY;
+    }
+  }
+  createBlock = false;
+  rightKey = false;
+  leftKey = false;
+}
+
+function oBlockCreate() {
+  let initialX = xCor;
+  let initialY = yCor;
+  if (createBlock) {
+    if (rightKey) {
+      grid[yCor][xCor] = 0;
+      grid[yCor + 1][xCor] = 0;
+    }
+    if (leftKey) {
+      grid[yCor][xCor + 3] = 0;
+      grid[yCor + 1][xCor + 3] = 0;
+    }
+    for (let i = 0; i < oBlock.length; i++) {
+      if (i > 0) {
+        yCor++;
+      }
+      for (let j = 0; j < oBlock[i].length; j++) {
+        xCor++;
+        if (oBlock[i][j] === 1) {
+          grid[yCor][xCor] = 6;
+        }
+      }
+      xCor = initialX;
+      yCor = initialY;
+    }
+  }
+  createBlock = false;
+  rightKey = false;
+  leftKey = false;
+}
+
+function tblockCreate() {
+  let initialX = xCor;
+  let initialY = yCor;
+  if (createBlock) {
+    if (rightKey) {
+      grid[yCor][xCor + 1] = 0;
+      grid[yCor + 1][xCor] = 0;
+    }
+    if (leftKey) {
+      grid[yCor][xCor + 3] = 0;
+      grid[yCor + 1][xCor + 4] = 0;
+    }
+    for (let i = 0; i < tBlock.length; i++) {
+      if (i > 0) {
+        yCor++;
+      }
+      for (let j = 0; j < tBlock[i].length; j++) {
+        xCor++;
+        if (tBlock[i][j] === 1) {
+          grid[yCor][xCor] = 6;
+        }
+      }
+      xCor = initialX;
+      yCor = initialY;
+    }
+  }
+  createBlock = false;
+  rightKey = false;
+  leftKey = false;
+}
+
