@@ -354,3 +354,6 @@ function tblockCreate() {
   leftKey = false;
 }
 
+function spin() {
+  
+}
