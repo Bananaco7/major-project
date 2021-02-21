@@ -9,7 +9,7 @@ let gridHeight;
 let gridWidth;
 let rightKey = false;
 let leftKey = false;
-let dropping = true;
+let dropping = false;
 let createBlock = false;
 let dropTime;
 let yCor = 0;
@@ -53,7 +53,7 @@ function draw() {
   // zBlockCreate();
   // sBlockCreate();
   // oBlockCreate();
-  // tblockCreate();
+  tblockCreate();
 }
 
 
@@ -111,28 +111,32 @@ function createEmptyGrid(cols, rows) {
 
 function blockDrop() {
   if (dropping) {
-    dropTime = millis();
-    if (dropTime % 2 === 0) {
-      console.log("happened");
-      yCor++;
-      createBlock === true;
-    }
+    yCor++;
+    createBlock === true;
+    dropping === false;
   }
 }
 
 function keyPressed() {
-  if (keyCode === RIGHT_ARROW) {
-    rightKey = true;
-    createBlock = true;
-    xCor++;
+  if (xCor < COLS - 4){
+    if (keyCode === RIGHT_ARROW) {
+      rightKey = true;
+      createBlock = true;
+      xCor++;
+    }
   }
-  if (keyCode === LEFT_ARROW) {
-    leftKey = true;
-    xCor--;
-    createBlock = true;
+  if (xCor>= 0) {
+    if (keyCode === LEFT_ARROW) {
+      leftKey = true;
+      xCor--;
+      createBlock = true;
+    }
   }
   if (keyCode === ENTER) {
     createBlock = true;
+  }
+  if (keyCode === DOWN_ARROW) {
+    dropping = true;
   }
 }
 function drop() {
