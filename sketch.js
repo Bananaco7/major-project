@@ -9,25 +9,41 @@ let gridHeight;
 let gridWidth;
 let rightKey = false;
 let leftKey = false;
+let upKey = false;
 let dropping = false;
 let createBlock = false;
 let dropTime;
-let yCor = 0;
+let yCor = 1;
 let xCor = 0;
-let iBlock, lBlock, jBlock, zBlock, sBlock, oBlock;
-
+let iBlock, lBlock, jBlock, zBlock, sBlock, oBlock, tBlock;
+let blockList;
+let block;
+let blockColor;
+let rotateShape;
 
 
 function setup() {
   iBlock = [[1, 1, 1, 1]];
-  lBlock = [[0, 0, 0, 1], [0, 1, 1, 1]];
-  jBlock = [[0, 1, 0, 0], [0, 1, 1, 1]];
+  iBlockInverse = [[1], [1], [1], [1]]
+
+  lBlock = [[0, 0, 1, 0], [1, 1, 1, 0]];
+  lBlockInverse1 = [[1], [1], [1, 1]];
+  lBlockInverse2 = [[1, 1, 1], [1]];
+  lBlockInverse3 = [[1, 1],[0, 1], [0, 1]];
+
+  jBlock = [[1, 0, 0, 0], [1, 1, 1, 0]];
+  jBlockInverse1 = [[1, 1], [1], [1]];
+  jBlockInverse2 = [[1, 1, 1] [0, 0, 1]];
+  jBlockInverse3 = [[0,1], [0,1],[1, 1]];
+
+
   zBlock = [[1, 1, 0, 0], [0, 1, 1, 0]];
   sBlock = [[0, 1, 1, 0], [1, 1, 0, 0]];
   oBlock = [[1, 1, 0, 0], [1, 1, 0, 0]];
   tBlock = [[0, 1, 0, 0], [1, 1, 1, 0]];
   createCanvas(windowWidth, windowHeight);
 
+  blockList = [iBlock, lBlock, jBlock, zBlock, sBlock, oBlock, tBlock];
   //creating the grid dimesions for tetris
   gridHeight = windowHeight * 0.90;
   gridWidth = windowWidth *0.28;
@@ -46,14 +62,9 @@ function setup() {
 function draw() {
   background(220);
   displayGrid();
-  // iBlockCreate();
+  blockCreate();
   blockDrop();
-  // lBlockCreate();
-  // jBlockCreate();
-  // zBlockCreate();
-  // sBlockCreate();
-  // oBlockCreate();
-  tblockCreate();
+  rotate();
 }
 
 
@@ -92,6 +103,34 @@ function displayGrid() {
         fill("red");
         stroke("white");
       }
+      if (grid[y][x] === 8){
+        fill("turquoise");
+        stroke("white");
+      }
+      if (grid[y][x] === 9){
+        fill("blue");
+        stroke("white");
+      }
+      if (grid[y][x] === 10){
+        fill("orange");
+        stroke("white");
+      }
+      if (grid[y][x] === 11){
+        fill("yellow");
+        stroke("white");
+      }
+      if (grid[y][x] === 12){
+        fill("green");
+        stroke("white");
+      }
+      if (grid[y][x] === 13){
+        fill("purple");
+        stroke("white");
+      }
+      if (grid[y][x] === 14){
+        fill("red");
+        stroke("white");
+      }
       //creating the grid with the extra side padding 
       rect(x*cellWidth + sidePadding, y*cellHeight + topPadding, cellWidth, cellHeight); 
     }
@@ -112,8 +151,8 @@ function createEmptyGrid(cols, rows) {
 function blockDrop() {
   if (dropping) {
     yCor++;
-    createBlock === true;
-    dropping === false;
+    createBlock = true;
+    dropping = false;
   }
 }
 
@@ -138,56 +177,64 @@ function keyPressed() {
   if (keyCode === DOWN_ARROW) {
     dropping = true;
   }
+  if (keyCode === UP_ARROW) {
+    upKey === true; 
+  }
 }
-function drop() {
 
+function colorPick() {
+  if (block === iBlock) {
+    blockColor = 1;
+  }
+  if (block === lBlock) {
+    blockColor = 2;
+  }
+  if (block === jBlock) {
+    blockColor = 3;
+  }
+  if (block === zBlock) {
+    blockColor = 4;
+  }
+  if (block === sBlock) {
+    blockColor = 5;
+  }
+  if (block === oBlock) {
+    blockColor = 6;
+  }
+  if (block === tBlock) {
+    blockColor = 7;
+  }
 }
 
-function iBlockCreate() {
+function newPosition() {
+  if (rightKey || leftKey || upKey) {
+    for (let i = 0; i <= 6; i++) {
+      for (let j = 0; j <= 6; j++) {
+        if (grid[yCor + j][xCor + i] === blockColor) {
+          grid[yCor + j][xCor + i] = 0;
+          console.log("yup");
+        }
+      }
+    }
+  }
+}
+
+function blockCreate() {
   //I-Block creation 
   let initialX = xCor;
-  if (createBlock) {
-    if (grid[yCor][xCor] === 1 && rightKey) {
-      grid[yCor][xCor] = 0;
-    }
-    if (grid[yCor][xCor+5] === 1 && leftKey) {
-      grid[yCor][xCor+5] = 0;
-    }
-    for (let i = 0; i < iBlock.length; i++) {
-      for (let j = 0; j < iBlock[i].length; j++) {
-        xCor++;
-        if (iBlock[i][j] === 1) {
-          grid[yCor][xCor] = 1;
-        }
-      }
-      xCor = initialX;
-    }
-  }
-  createBlock = false;
-  rightKey = false;
-  leftKey = false;
-}
-
-function lBlockCreate() {
-  let initialX = xCor;
   let initialY = yCor;
   if (createBlock) {
-    if (rightKey) {
-      grid[yCor][xCor + 3] = 0;
-      grid[yCor + 1][xCor + 1] = 0;
-    }
-    if (leftKey) {
-      grid[yCor][xCor+5] = 0;
-      grid[yCor + 1][xCor + 5] = 0;
-    }
-    for (let i = 0; i < lBlock.length; i++) {
+    newPosition();
+    block = blockList[Math.floor(Math.random()*blockList.length)];
+    colorPick();
+    for (let i = 0; i < block.length; i++) {
       if (i > 0) {
         yCor++;
       }
-      for (let j = 0; j < lBlock[i].length; j++) {
+      for (let j = 0; j < block[i].length; j++) {
         xCor++;
-        if (lBlock[i][j] === 1) {
-          grid[yCor][xCor] = 2;
+        if (block[i][j] === 1) {
+          grid[yCor][xCor] = blockColor;
         }
       }
       xCor = initialX;
@@ -199,161 +246,19 @@ function lBlockCreate() {
   leftKey = false;
 }
 
-function jBlockCreate() {
-  let initialX = xCor;
-  let initialY = yCor;
-  if (createBlock) {
-    if (rightKey) {
-      grid[yCor][xCor + 1] = 0;
-      grid[yCor + 1][xCor + 1] = 0;
-    }
-    if (leftKey) {
-      grid[yCor][xCor + 3] = 0;
-      grid[yCor + 1][xCor + 5] = 0;
-    }
-    for (let i = 0; i < jBlock.length; i++) {
-      if (i > 0) {
-        yCor++;
+
+function rotate() {
+  let rotateCount = 0;
+  if (upKey) {
+    rotateCount++;
+    if (block === iBlock) {
+      if (roatateCount === 1) {
+        rotateShape = iBlockInverse;
+        
       }
-      for (let j = 0; j < jBlock[i].length; j++) {
-        xCor++;
-        if (jBlock[i][j] === 1) {
-          grid[yCor][xCor] = 3;
-        }
+      if (rotateCount === 2) {
+        rotateShape = iBlock;
       }
-      xCor = initialX;
-      yCor = initialY;
     }
   }
-  createBlock = false;
-  rightKey = false;
-  leftKey = false;
-}
-
-function zBlockCreate() {
-  let initialX = xCor;
-  let initialY = yCor;
-  if (createBlock) {
-    if (rightKey) {
-      grid[yCor][xCor] = 0;
-      grid[yCor + 1][xCor + 1] = 0;
-    }
-    if (leftKey) {
-      grid[yCor][xCor + 3] = 0;
-      grid[yCor + 1][xCor + 4] = 0;
-    }
-    for (let i = 0; i < zBlock.length; i++) {
-      if (i > 0) {
-        yCor++;
-      }
-      for (let j = 0; j < zBlock[i].length; j++) {
-        xCor++;
-        if (zBlock[i][j] === 1) {
-          grid[yCor][xCor] = 4;
-        }
-      }
-      xCor = initialX;
-      yCor = initialY;
-    }
-  }
-  createBlock = false;
-  rightKey = false;
-  leftKey = false;
-}
-
-function sBlockCreate() {
-  let initialX = xCor;
-  let initialY = yCor;
-  if (createBlock) {
-    if (rightKey) {
-      grid[yCor][xCor + 1] = 0;
-      grid[yCor + 1][xCor] = 0;
-    }
-    if (leftKey) {
-      grid[yCor][xCor + 4] = 0;
-      grid[yCor + 1][xCor + 3] = 0;
-    }
-    for (let i = 0; i < sBlock.length; i++) {
-      if (i > 0) {
-        yCor++;
-      }
-      for (let j = 0; j < sBlock[i].length; j++) {
-        xCor++;
-        if (sBlock[i][j] === 1) {
-          grid[yCor][xCor] = 5;
-        }
-      }
-      xCor = initialX;
-      yCor = initialY;
-    }
-  }
-  createBlock = false;
-  rightKey = false;
-  leftKey = false;
-}
-
-function oBlockCreate() {
-  let initialX = xCor;
-  let initialY = yCor;
-  if (createBlock) {
-    if (rightKey) {
-      grid[yCor][xCor] = 0;
-      grid[yCor + 1][xCor] = 0;
-    }
-    if (leftKey) {
-      grid[yCor][xCor + 3] = 0;
-      grid[yCor + 1][xCor + 3] = 0;
-    }
-    for (let i = 0; i < oBlock.length; i++) {
-      if (i > 0) {
-        yCor++;
-      }
-      for (let j = 0; j < oBlock[i].length; j++) {
-        xCor++;
-        if (oBlock[i][j] === 1) {
-          grid[yCor][xCor] = 6;
-        }
-      }
-      xCor = initialX;
-      yCor = initialY;
-    }
-  }
-  createBlock = false;
-  rightKey = false;
-  leftKey = false;
-}
-
-function tblockCreate() {
-  let initialX = xCor;
-  let initialY = yCor;
-  if (createBlock) {
-    if (rightKey) {
-      grid[yCor][xCor + 1] = 0;
-      grid[yCor + 1][xCor] = 0;
-    }
-    if (leftKey) {
-      grid[yCor][xCor + 3] = 0;
-      grid[yCor + 1][xCor + 4] = 0;
-    }
-    for (let i = 0; i < tBlock.length; i++) {
-      if (i > 0) {
-        yCor++;
-      }
-      for (let j = 0; j < tBlock[i].length; j++) {
-        xCor++;
-        if (tBlock[i][j] === 1) {
-          grid[yCor][xCor] = 6;
-        }
-      }
-      xCor = initialX;
-      yCor = initialY;
-    }
-  }
-  createBlock = false;
-  rightKey = false;
-  leftKey = false;
-}
-
-function spin() {
-  
 }
