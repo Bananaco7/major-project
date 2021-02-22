@@ -10,31 +10,35 @@ let gridWidth;
 let rightKey = false;
 let leftKey = false;
 let upKey = false;
+let downKey = false;
 let dropping = false;
 let createBlock = false;
 let dropTime;
-let yCor = 1;
+let yCor = 4;
 let xCor = 0;
 let iBlock, lBlock, jBlock, zBlock, sBlock, oBlock, tBlock;
 let blockList;
+let iBlockList, lBlockList, jBlockList, zBlockList, sBlockList, oBlockList, tBlockList;
 let block;
 let blockColor;
-let rotateShape;
+let blockOrientation;
+let rotateCount = 0;
+let counter;
 
 
 function setup() {
   iBlock = [[1, 1, 1, 1]];
-  iBlockInverse = [[1], [1], [1], [1]]
+  let iBlockInverse = [[1], [1], [1], [1]];
 
   lBlock = [[0, 0, 1, 0], [1, 1, 1, 0]];
-  lBlockInverse1 = [[1], [1], [1, 1]];
-  lBlockInverse2 = [[1, 1, 1], [1]];
-  lBlockInverse3 = [[1, 1],[0, 1], [0, 1]];
+  let lBlockInverse1 = [[1], [1], [1, 1]];
+  let lBlockInverse2 = [[1, 1, 1], [1]];
+  let lBlockInverse3 = [[1, 1],[0, 1], [0, 1]];
 
   jBlock = [[1, 0, 0, 0], [1, 1, 1, 0]];
-  jBlockInverse1 = [[1, 1], [1], [1]];
-  jBlockInverse2 = [[1, 1, 1] [0, 0, 1]];
-  jBlockInverse3 = [[0,1], [0,1],[1, 1]];
+  let jBlockInverse1 = [[1, 1], [1], [1]];
+  let jBlockInverse2 = [[1, 1, 1] [0, 0, 1]];
+  let jBlockInverse3 = [[0,1], [0,1],[1, 1]];
 
 
   zBlock = [[1, 1, 0, 0], [0, 1, 1, 0]];
@@ -44,6 +48,10 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
 
   blockList = [iBlock, lBlock, jBlock, zBlock, sBlock, oBlock, tBlock];
+  iBlockList = [iBlock, iBlockInverse];
+  lBlockList = [lBlock, lBlockInverse1, lBlockInverse2, lBlockInverse3];
+  jBlockList = [jBlock, jBlockInverse1, jBlockInverse2, jBlockInverse3];
+
   //creating the grid dimesions for tetris
   gridHeight = windowHeight * 0.90;
   gridWidth = windowWidth *0.28;
@@ -175,10 +183,13 @@ function keyPressed() {
     createBlock = true;
   }
   if (keyCode === DOWN_ARROW) {
-    dropping = true;
+    downKey = true;
+    createBlock = true;
   }
   if (keyCode === UP_ARROW) {
-    upKey === true; 
+    upKey = true; 
+    createBlock = true;
+    counter++;
   }
 }
 
@@ -206,6 +217,7 @@ function colorPick() {
   }
 }
 
+//clears previous postion of the tetris block
 function newPosition() {
   if (rightKey || leftKey || upKey) {
     for (let i = 0; i <= 6; i++) {
@@ -223,7 +235,8 @@ function blockCreate() {
   //I-Block creation 
   let initialX = xCor;
   let initialY = yCor;
-  if (createBlock) {
+  if (createBlock && !upKey && !downKey) {
+    console.log("yes");
     newPosition();
     block = blockList[Math.floor(Math.random()*blockList.length)];
     colorPick();
@@ -240,25 +253,53 @@ function blockCreate() {
       xCor = initialX;
       yCor = initialY;
     }
+    createBlock = false;
+    rightKey = false;
+    leftKey = false;
+  }
+
+
+
+  if (createBlock && (upKey || downKey)) {
+    console.log("hey");
+    newPosition();
+    rotation();
+    if (block === iBlock) {
+      blockOrientation = iBlockList[rotateCount];
+    }
+    for (let i = 0; i < blockOrientation.length; i++) {
+      if (i > 0) {
+        yCor++;
+      }
+      for (let j = 0; j < blockOrientation[i].length; j++) {
+        xCor++;
+        if (blockOrientation[i][j] === 1) {
+          grid[yCor][xCor] = 1;
+        }
+      }
+      xCor = initialX;
+      yCor = initialY;
+    }
   }
   createBlock = false;
   rightKey = false;
   leftKey = false;
+  upKey = false;
+  downKey = false;
 }
 
-
-function rotate() {
-  let rotateCount = 0;
+// shape that has 3 rotational possibilities
+function rotation() {
   if (upKey) {
     rotateCount++;
-    if (block === iBlock) {
-      if (roatateCount === 1) {
-        rotateShape = iBlockInverse;
-        
-      }
-      if (rotateCount === 2) {
-        rotateShape = iBlock;
-      }
-    }
+  }
+  if (downKey) {
+    rotateCount--;
+  }
+  if (rotateCount === 4) {
+    rotateCount = 0;
+  }
+  if (rotateCount === 2 && block === iBlock) {
+    rotateCount = 0;
   }
 }
