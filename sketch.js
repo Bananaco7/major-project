@@ -37,20 +37,33 @@ function setup() {
 
   jBlock = [[1, 0, 0, 0], [1, 1, 1, 0]];
   let jBlockInverse1 = [[1, 1], [1], [1]];
-  let jBlockInverse2 = [[1, 1, 1] [0, 0, 1]];
+  let jBlockInverse2 = [[1, 1, 1], [0, 0, 1]];
   let jBlockInverse3 = [[0,1], [0,1],[1, 1]];
 
 
   zBlock = [[1, 1, 0, 0], [0, 1, 1, 0]];
+  let zBLockInverse1 = [[0, 1], [1, 1], [1, 0]];
+
   sBlock = [[0, 1, 1, 0], [1, 1, 0, 0]];
+  let sBlockInverse1 = [[1, 0], [1, 1], [0, 1]];
+
   oBlock = [[1, 1, 0, 0], [1, 1, 0, 0]];
+
   tBlock = [[0, 1, 0, 0], [1, 1, 1, 0]];
+  let tBlockInverse1 = [[1, 0], [1, 1], [1, 0]];
+  let tBlockInverse2 = [[1, 1, 1], [0, 1, 0]];
+  let tBlockInverse3 = [[0, 1], [1, 1], [0, 1]];
+
   createCanvas(windowWidth, windowHeight);
 
   blockList = [iBlock, lBlock, jBlock, zBlock, sBlock, oBlock, tBlock];
   iBlockList = [iBlock, iBlockInverse];
   lBlockList = [lBlock, lBlockInverse1, lBlockInverse2, lBlockInverse3];
   jBlockList = [jBlock, jBlockInverse1, jBlockInverse2, jBlockInverse3];
+  zBlockList = [zBlock, zBLockInverse1];
+  sBlockList = [sBlock, sBlockInverse1];
+  tBlockList = [tBlock, tBlockInverse1, tBlockInverse2, tBlockInverse3];
+
 
   //creating the grid dimesions for tetris
   gridHeight = windowHeight * 0.90;
@@ -220,8 +233,8 @@ function colorPick() {
 //clears previous postion of the tetris block
 function newPosition() {
   if (rightKey || leftKey || upKey) {
-    for (let i = 0; i <= 6; i++) {
-      for (let j = 0; j <= 6; j++) {
+    for (let i = 0; i <= 10; i++) {
+      for (let j = 0; j <= 10; j++) {
         if (grid[yCor + j][xCor + i] === blockColor) {
           grid[yCor + j][xCor + i] = 0;
           console.log("yup");
@@ -240,6 +253,7 @@ function blockCreate() {
     newPosition();
     block = blockList[Math.floor(Math.random()*blockList.length)];
     colorPick();
+    rotateCount = 0;
     for (let i = 0; i < block.length; i++) {
       if (i > 0) {
         yCor++;
@@ -260,13 +274,30 @@ function blockCreate() {
 
 
 
-  if (createBlock && (upKey || downKey)) {
-    console.log("hey");
+  if (createBlock && (upKey || downKey) && block !== oBlock) {
     newPosition();
+    console.log("works");
     rotation();
+    colorPick();
     if (block === iBlock) {
       blockOrientation = iBlockList[rotateCount];
     }
+    if (block === lBlock) {
+      blockOrientation = lBlockList[rotateCount];
+    }
+    if (block === jBlock) {
+      blockOrientation = jBlockList[rotateCount];
+    }
+    if (block === zBlock) {
+      blockOrientation = zBlockList[rotateCount];
+    }
+    if (block === sBlock) {
+      blockOrientation = sBlockList[rotateCount];
+    }
+    if (block === tBlock) {
+      blockOrientation = tBlockList[rotateCount];
+    }
+    
     for (let i = 0; i < blockOrientation.length; i++) {
       if (i > 0) {
         yCor++;
@@ -274,13 +305,13 @@ function blockCreate() {
       for (let j = 0; j < blockOrientation[i].length; j++) {
         xCor++;
         if (blockOrientation[i][j] === 1) {
-          grid[yCor][xCor] = 1;
+          grid[yCor][xCor] = blockColor;
         }
       }
       xCor = initialX;
-      yCor = initialY;
     }
   }
+  yCor = initialY;
   createBlock = false;
   rightKey = false;
   leftKey = false;
@@ -288,7 +319,7 @@ function blockCreate() {
   downKey = false;
 }
 
-// shape that has 3 rotational possibilities
+
 function rotation() {
   if (upKey) {
     rotateCount++;
@@ -299,7 +330,7 @@ function rotation() {
   if (rotateCount === 4) {
     rotateCount = 0;
   }
-  if (rotateCount === 2 && block === iBlock) {
+  if (rotateCount === 2 && (block === iBlock || block === zBlock || block === sBlock)) {
     rotateCount = 0;
   }
 }
