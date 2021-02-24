@@ -14,6 +14,7 @@ let downKey = false;
 let dropping = false;
 let createBlock = false;
 let dropTime;
+let timer;
 let yCor = 4;
 let xCor = 0;
 let iBlock, lBlock, jBlock, zBlock, sBlock, oBlock, tBlock;
@@ -24,11 +25,14 @@ let blockColor;
 let blockOrientation;
 let rotateCount = 0;
 let counter;
+let nextBlockCols;
+let nextBlockRows;
+let locked;
 
 
 function setup() {
   iBlock = [[1, 1, 1, 1]];
-  let iBlockInverse = [[1], [1], [1], [1]];
+  let iBlockInverse = [[0, 1], [0,1], [0,1], [0,1]];
 
   lBlock = [[0, 0, 1, 0], [1, 1, 1, 0]];
   let lBlockInverse1 = [[1], [1], [1, 1]];
@@ -76,6 +80,9 @@ function setup() {
   //padding for the sides of the tetris grid
   sidePadding = (windowWidth - gridWidth)/2; 
   topPadding = (windowHeight - gridHeight)/2;
+
+  //dimensions for the next block grid
+  nextBlockCols = 
 
   grid = createEmptyGrid(COLS, ROWS);
 }
@@ -152,6 +159,10 @@ function displayGrid() {
         fill("red");
         stroke("white");
       }
+      if (grid[y][x === 15]) {
+        fill("grey");
+        stroke("black");
+      }
       //creating the grid with the extra side padding 
       rect(x*cellWidth + sidePadding, y*cellHeight + topPadding, cellWidth, cellHeight); 
     }
@@ -169,11 +180,43 @@ function createEmptyGrid(cols, rows) {
   return empty;
 }
 
+function createNextBlockGrid(cols, rows) {
+  let empty = [];
+  for (let y  = 0; y < rows; y++) {
+    empty.push([]);
+    for (let x = 0; x < cols; x++) {
+      empty[y].push(0);
+    }
+  }
+  return empty;
+}
+
 function blockDrop() {
+  // dropTime = millis();
   if (dropping) {
-    yCor++;
-    createBlock = true;
-    dropping = false;
+    if (millis() > dropTime + timer) {
+      newPosition();
+      console.log("drops");
+      yCor++;
+      createBlock = true;
+      dropTime = millis();
+      timer = 1000;
+      if (rotateCount === 0 && yCor >= ROWS - block.length) {
+        dropping = false;
+        console.log("stoped");
+        locked = true;
+      }
+      if (rotateCount !== 0 && yCor >= ROWS - blockOrientation.length) {
+        dropping = false;
+        console.log("stopped");
+      }
+    }
+    if (downKey === true) {
+      newPosition();
+      yCor++;
+      createBlock = true;
+      downKey = false;
+    }
   }
 }
 
@@ -194,10 +237,14 @@ function keyPressed() {
   }
   if (keyCode === ENTER) {
     createBlock = true;
+    newPosition();
+    block = blockList[Math.floor(Math.random()*blockList.length)];
+    dropping = true;
+    dropTime = millis();
+    timer = 1000;
   }
   if (keyCode === DOWN_ARROW) {
-    downKey = true;
-    createBlock = true;
+    timer = 150;
   }
   if (keyCode === UP_ARROW) {
     upKey = true; 
@@ -232,9 +279,9 @@ function colorPick() {
 
 //clears previous postion of the tetris block
 function newPosition() {
-  if (rightKey || leftKey || upKey) {
-    for (let i = 0; i <= 10; i++) {
-      for (let j = 0; j <= 10; j++) {
+  if (rightKey || leftKey || upKey || dropping) {
+    for (let i = 0; i <= 4; i++) {
+      for (let j = 0; j <= block.length; j++) {
         if (grid[yCor + j][xCor + i] === blockColor) {
           grid[yCor + j][xCor + i] = 0;
           console.log("yup");
@@ -248,31 +295,47 @@ function blockCreate() {
   //I-Block creation 
   let initialX = xCor;
   let initialY = yCor;
-  if (createBlock && !upKey && !downKey) {
+  if (createBlock && !upKey) {
     console.log("yes");
-    newPosition();
-    block = blockList[Math.floor(Math.random()*blockList.length)];
     colorPick();
-    rotateCount = 0;
-    for (let i = 0; i < block.length; i++) {
-      if (i > 0) {
-        yCor++;
-      }
-      for (let j = 0; j < block[i].length; j++) {
-        xCor++;
-        if (block[i][j] === 1) {
-          grid[yCor][xCor] = blockColor;
+    newPosition();
+    if (rotateCount === 0) {
+      for (let i = 0; i < block.length; i++) {
+        if (i > 0) {
+          yCor++;
         }
+        for (let j = 0; j < block[i].length; j++) {
+          xCor++;
+          if (block[i][j] === 1) {
+            grid[yCor][xCor] = blockColor;
+          }
+        }
+        xCor = initialX;
+        yCor = initialY;
       }
-      xCor = initialX;
-      yCor = initialY;
+      createBlock = false;
+      rightKey = false;
+      leftKey = false;
     }
-    createBlock = false;
-    rightKey = false;
-    leftKey = false;
+    else {
+      for (let i = 0; i < blockOrientation.length; i++) {
+        if (i > 0) {
+          yCor++;
+        }
+        for (let j = 0; j < blockOrientation[i].length; j++) {
+          xCor++;
+          if (blockOrientation[i][j] === 1) {
+            grid[yCor][xCor] = blockColor;
+          }
+        }
+        xCor = initialX;
+      }
+      yCor = initialY;
+      createBlock = false;
+      rightKey = false;
+      leftKey = false;
+    }
   }
-
-
 
   if (createBlock && (upKey || downKey) && block !== oBlock) {
     newPosition();
@@ -334,3 +397,12 @@ function rotation() {
     rotateCount = 0;
   }
 }
+function lockBlock() {
+  if (locked) {
+    
+  }
+}
+function createNewBlock {
+  if 
+}
+
