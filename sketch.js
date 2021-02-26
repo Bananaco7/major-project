@@ -15,19 +15,25 @@ let dropping = false;
 let createBlock = false;
 let dropTime;
 let timer;
-let yCor = 4;
-let xCor = 0;
+let yCor = 0;
+let xCor = 6;
 let iBlock, lBlock, jBlock, zBlock, sBlock, oBlock, tBlock;
 let blockList;
 let iBlockList, lBlockList, jBlockList, zBlockList, sBlockList, oBlockList, tBlockList;
 let block;
 let blockColor;
+let permanentColor;
 let blockOrientation;
 let rotateCount = 0;
 let counter;
 let nextBlockCols;
 let nextBlockRows;
-let locked;
+let respawn = false;
+let finalShape;
+let finalXcor;
+let finalYcor;
+let finalOrientation;
+
 
 
 function setup() {
@@ -195,21 +201,37 @@ function blockDrop() {
   // dropTime = millis();
   if (dropping) {
     if (millis() > dropTime + timer) {
-      newPosition();
+      if (!respawn) {
+        console.log("okok");
+        newPosition();
+      }
       console.log("drops");
       yCor++;
       createBlock = true;
       dropTime = millis();
       timer = 1000;
-      if (rotateCount === 0 && yCor >= ROWS - block.length) {
-        dropping = false;
-        console.log("stoped");
-        locked = true;
-      }
-      if (rotateCount !== 0 && yCor >= ROWS - blockOrientation.length) {
-        dropping = false;
-        console.log("stopped");
-      }
+      finalXcor = xCor;
+      finalYcor = yCor;
+      finalShape = block;
+      finalOrientation = blockOrientation;
+    }
+    if (rotateCount === 0 && yCor >= ROWS - block.length) {
+      createBlock = true;
+      dropping = false;
+      console.log("stoped");
+      stagnant();
+      respawnBlock();
+      dropping === false;
+      respawn === true;
+    }
+    if (rotateCount !== 0 && yCor >= ROWS - blockOrientation.length) {
+      createBlock = true;
+      dropping = false;
+      console.log("stopped");
+      stagnant();
+      respawnBlock();
+      dropping === false;
+      respawn == true;
     }
     if (downKey === true) {
       newPosition();
@@ -223,6 +245,7 @@ function blockDrop() {
 function keyPressed() {
   if (xCor < COLS - 4){
     if (keyCode === RIGHT_ARROW) {
+      newPosition();
       rightKey = true;
       createBlock = true;
       xCor++;
@@ -230,6 +253,7 @@ function keyPressed() {
   }
   if (xCor>= 0) {
     if (keyCode === LEFT_ARROW) {
+      newPosition();
       leftKey = true;
       xCor--;
       createBlock = true;
@@ -245,8 +269,10 @@ function keyPressed() {
   }
   if (keyCode === DOWN_ARROW) {
     timer = 150;
+    newPosition();
   }
   if (keyCode === UP_ARROW) {
+    newPosition();
     upKey = true; 
     createBlock = true;
     counter++;
@@ -277,6 +303,30 @@ function colorPick() {
   }
 }
 
+function colorPickPerma() {
+  if (finalShape  === iBlock) {
+    permanentColor = 8;
+  }
+  if (finalShape  === lBlock) {
+    permanentColor = 9;
+  }
+  if (finalShape  === jBlock) {
+    permanentColor = 10;
+  }
+  if (finalShape  === zBlock) {
+    permanentColor = 11;
+  }
+  if (finalShape  === sBlock) {
+    permanentColor = 12;
+  }
+  if (finalShape === oBlock) {
+    permanentColor = 13;
+  }
+  if (finalShape  === tBlock) {
+    permanentColor = 14;
+  }
+}
+
 //clears previous postion of the tetris block
 function newPosition() {
   if (rightKey || leftKey || upKey || dropping) {
@@ -298,7 +348,6 @@ function blockCreate() {
   if (createBlock && !upKey) {
     console.log("yes");
     colorPick();
-    newPosition();
     if (rotateCount === 0) {
       for (let i = 0; i < block.length; i++) {
         if (i > 0) {
@@ -397,12 +446,61 @@ function rotation() {
     rotateCount = 0;
   }
 }
-function lockBlock() {
-  if (locked) {
-    
+function respawnBlock() {
+  yCor = 0; 
+  xCor = 6;
+  console.log("spawned");
+  block = blockList[Math.floor(Math.random()*blockList.length)];
+  createBlock === true;
+  respawn === false;
+  dropping = true;
+  dropTime = millis();
+  timer = 1000;
+  rotateCount = 0;
+}
+
+function stagnant() {
+  let initialX = finalXcor;
+  let initialY = finalYcor;
+  colorPickPerma();
+  console.log("perma");
+  if (rotateCount === 0) {
+    for (let i = 0; i < finalShape.length; i++) {
+      if (i > 0) {
+        finalYcor++;
+      }
+      for (let j = 0; j < finalShape[i].length; j++) {
+        finalXcor++;
+        if (finalShape[i][j] === 1) {
+          grid[finalYcor][finalXcor] = permanentColor;
+        }
+      }
+      finalXcor = initialX;
+      finalYcor = initialY;
+    }
+    createBlock = false;
+    rightKey = false;
+    leftKey = false;
+  }
+  else if (rotateCount > 0 ) {
+    for (let i = 0; i < finalOrientation.length; i++) {
+      if (i > 0) {
+        finalYcor++;
+      }
+      for (let j = 0; j < finalOrientation[i].length; j++) {
+        finalXcor++;
+        if (finalOrientation[i][j] === 1) {
+          grid[finalYcor][finalXcor] = permanentColor;
+        }
+      }
+      finalXcor = initialX;
+    }
+    finalYcor = initialY;
+    createBlock = false;
+    rightKey = false;
+    leftKey = false;
   }
 }
-function createNewBlock {
-  if 
-}
+
+
 
