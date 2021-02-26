@@ -33,25 +33,26 @@ let finalShape;
 let finalXcor;
 let finalYcor;
 let finalOrientation;
+let lockedColorValues;
 
 
 
 function setup() {
   iBlock = [[1, 1, 1, 1]];
-  let iBlockInverse = [[0, 1], [0,1], [0,1], [0,1]];
+  let iBlockInverse = [[1], [1], [1], [1]];
 
   lBlock = [[0, 0, 1, 0], [1, 1, 1, 0]];
-  let lBlockInverse1 = [[1], [1], [1, 1]];
-  let lBlockInverse2 = [[1, 1, 1], [1]];
-  let lBlockInverse3 = [[1, 1],[0, 1], [0, 1]];
+  let lBlockInverse1 = [[1, 0, 0], [1, 0, 0], [1, 1, 0]];
+  let lBlockInverse2 = [[1, 1, 1], [1, 0, 0]];
+  let lBlockInverse3 = [[1, 1, 0],[0, 1, 0], [0, 1, 0]];
 
   jBlock = [[1, 0, 0, 0], [1, 1, 1, 0]];
-  let jBlockInverse1 = [[1, 1], [1], [1]];
+  let jBlockInverse1 = [[1, 1, 0], [1, 0, 0], [1, 0, 0]];
   let jBlockInverse2 = [[1, 1, 1], [0, 0, 1]];
-  let jBlockInverse3 = [[0,1], [0,1],[1, 1]];
+  let jBlockInverse3 = [[0, 1, 0], [0, 1, 0],[1, 1, 0]];
 
 
-  zBlock = [[1, 1, 0, 0], [0, 1, 1, 0]];
+  zBlock = [[1, 1], [0, 1, 1, 0]];
   let zBLockInverse1 = [[0, 1], [1, 1], [1, 0]];
 
   sBlock = [[0, 1, 1, 0], [1, 1, 0, 0]];
@@ -60,9 +61,9 @@ function setup() {
   oBlock = [[1, 1, 0, 0], [1, 1, 0, 0]];
 
   tBlock = [[0, 1, 0, 0], [1, 1, 1, 0]];
-  let tBlockInverse1 = [[1, 0], [1, 1], [1, 0]];
+  let tBlockInverse1 = [[1, 0, 0], [1, 1, 0], [1, 0, 0]];
   let tBlockInverse2 = [[1, 1, 1], [0, 1, 0]];
-  let tBlockInverse3 = [[0, 1], [1, 1], [0, 1]];
+  let tBlockInverse3 = [[0, 1, 0], [1, 1, 0], [0, 1, 0]];
 
   createCanvas(windowWidth, windowHeight);
 
@@ -74,6 +75,7 @@ function setup() {
   sBlockList = [sBlock, sBlockInverse1];
   tBlockList = [tBlock, tBlockInverse1, tBlockInverse2, tBlockInverse3];
 
+  lockedColorValues = [8, 9, 10, 11, 12, 13, 14];
 
   //creating the grid dimesions for tetris
   gridHeight = windowHeight * 0.90;
@@ -201,11 +203,7 @@ function blockDrop() {
   // dropTime = millis();
   if (dropping) {
     if (millis() > dropTime + timer) {
-      if (!respawn) {
-        console.log("okok");
-        newPosition();
-      }
-      console.log("drops");
+      newPosition();
       yCor++;
       createBlock = true;
       dropTime = millis();
@@ -218,20 +216,32 @@ function blockDrop() {
     if (rotateCount === 0 && yCor >= ROWS - block.length) {
       createBlock = true;
       dropping = false;
-      console.log("stoped");
       stagnant();
       respawnBlock();
-      dropping === false;
-      respawn === true;
     }
     if (rotateCount !== 0 && yCor >= ROWS - blockOrientation.length) {
       createBlock = true;
       dropping = false;
-      console.log("stopped");
       stagnant();
       respawnBlock();
-      dropping === false;
-      respawn == true;
+    }
+    if (rotateCount === 0) {
+      for (let i = 0; i <= block[0].length; i++) {
+        if (grid[yCor + block.length][xCor + i] !== 0 && xCor>= 0 && xCor < COLS - block[0].length) {
+          dropping = false;
+          stagnant();
+          respawnBlock();
+        }
+      }
+    }
+    if (rotateCount !== 0) {
+      for (let i = 0; i <= blockOrientation[0].length; i++) {
+        if (grid[yCor + blockOrientation.length][xCor + i] !== 0 && xCor>= 0 && xCor < COLS - blockOrientation[0].length) {
+          dropping = false;
+          stagnant();
+          respawnBlock();
+        }
+      }
     }
     if (downKey === true) {
       newPosition();
@@ -242,10 +252,16 @@ function blockDrop() {
   }
 }
 
+//
 function keyPressed() {
   if (xCor < COLS - 4){
     if (keyCode === RIGHT_ARROW) {
-      newPosition();
+      if (rotateCount === 0) {
+        newPosition();
+      }
+      if (rotateCount !==0) {
+        newPositionOrient();
+      }
       rightKey = true;
       createBlock = true;
       xCor++;
@@ -253,7 +269,12 @@ function keyPressed() {
   }
   if (xCor>= 0) {
     if (keyCode === LEFT_ARROW) {
-      newPosition();
+      if (rotateCount === 0) {
+        newPosition();
+      }
+      if (rotateCount !==0) {
+        newPositionOrient();
+      }
       leftKey = true;
       xCor--;
       createBlock = true;
@@ -272,13 +293,19 @@ function keyPressed() {
     newPosition();
   }
   if (keyCode === UP_ARROW) {
-    newPosition();
+    if (rotateCount === 0) {
+      newPosition();
+    }
+    if (rotateCount !==0) {
+      newPositionOrient();
+    }
     upKey = true; 
     createBlock = true;
     counter++;
   }
 }
 
+//stores the colors for active in play blocks
 function colorPick() {
   if (block === iBlock) {
     blockColor = 1;
@@ -303,6 +330,7 @@ function colorPick() {
   }
 }
 
+//creates permanent colors that wont be erased by the "newposition" function
 function colorPickPerma() {
   if (finalShape  === iBlock) {
     permanentColor = 8;
@@ -341,6 +369,21 @@ function newPosition() {
   }
 }
 
+//clears previous position of the tetris block when in rotated position
+function newPositionOrient() {
+  if (rightKey || leftKey || upKey || dropping) {
+    for (let i = 0; i <= 4; i++) {
+      for (let j = 0; j <= blockOrientation.length; j++) {
+        if (grid[yCor + j][xCor + i] === blockColor) {
+          grid[yCor + j][xCor + i] = 0;
+          console.log("yup");
+        }
+      }
+    }
+  }
+}
+
+
 function blockCreate() {
   //I-Block creation 
   let initialX = xCor;
@@ -348,6 +391,7 @@ function blockCreate() {
   if (createBlock && !upKey) {
     console.log("yes");
     colorPick();
+    //if statement for the creation of block when it is not in a rotated position
     if (rotateCount === 0) {
       for (let i = 0; i < block.length; i++) {
         if (i > 0) {
@@ -366,6 +410,7 @@ function blockCreate() {
       rightKey = false;
       leftKey = false;
     }
+    //else statement if 2 if statements are false but the block is in a rotated position
     else {
       for (let i = 0; i < blockOrientation.length; i++) {
         if (i > 0) {
@@ -385,8 +430,8 @@ function blockCreate() {
       leftKey = false;
     }
   }
-
-  if (createBlock && (upKey || downKey) && block !== oBlock) {
+  //if statement for the creation of rotated block, it creates the next rotation for the block when up key is pressed
+  if (createBlock && upKey && block !== oBlock) {
     newPosition();
     console.log("works");
     rotation();
@@ -431,8 +476,8 @@ function blockCreate() {
   downKey = false;
 }
 
-
-function rotation() {
+//keeps track of the rotations and when to rest the counter to 0
+function rotation() { 
   if (upKey) {
     rotateCount++;
   }
@@ -446,19 +491,20 @@ function rotation() {
     rotateCount = 0;
   }
 }
+
+//respawns a block when there are no blocks in play
 function respawnBlock() {
   yCor = 0; 
   xCor = 6;
   console.log("spawned");
   block = blockList[Math.floor(Math.random()*blockList.length)];
-  createBlock === true;
-  respawn === false;
   dropping = true;
   dropTime = millis();
   timer = 1000;
   rotateCount = 0;
 }
 
+//this function creates a stagnant copy of the once falling block 
 function stagnant() {
   let initialX = finalXcor;
   let initialY = finalYcor;
