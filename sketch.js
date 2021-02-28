@@ -2,9 +2,8 @@
 
 let ROWS; 
 let COLS;
-let grid, cellWidth, cellHeight;
-let sidePadding;
-let topPadding;
+let grid, cellWidth, cellHeight, predictGrid;
+let sidePadding, topPadding, nextBlockSidePadding, nextBlockTopPadding;
 let gridHeight;
 let gridWidth;
 let rightKey = false;
@@ -16,11 +15,13 @@ let createBlock = false;
 let dropTime;
 let timer;
 let yCor = 0;
-let xCor = 6;
+let xCor = 0;
+let predictX = -1;
+let predictY = 1;
 let iBlock, lBlock, jBlock, zBlock, sBlock, oBlock, tBlock;
 let blockList;
 let iBlockList, lBlockList, jBlockList, zBlockList, sBlockList, oBlockList, tBlockList;
-let block;
+let block, block2;
 let blockColor;
 let permanentColor;
 let blockOrientation;
@@ -34,6 +35,13 @@ let finalXcor;
 let finalYcor;
 let finalOrientation;
 let lockedColorValues;
+let displayPrediction;
+let stopped = false;
+let blockColor2;
+let blockCount = 0;
+let startGame = false;
+let blockLengthOrient = 0;
+let blockLength = 0;
 
 
 
@@ -41,29 +49,29 @@ function setup() {
   iBlock = [[1, 1, 1, 1]];
   let iBlockInverse = [[1], [1], [1], [1]];
 
-  lBlock = [[0, 0, 1, 0], [1, 1, 1, 0]];
-  let lBlockInverse1 = [[1, 0, 0], [1, 0, 0], [1, 1, 0]];
+  lBlock = [[0, 0, 1], [1, 1, 1]];
+  let lBlockInverse1 = [[1, 0], [1, 0,], [1, 1]];
   let lBlockInverse2 = [[1, 1, 1], [1, 0, 0]];
-  let lBlockInverse3 = [[1, 1, 0],[0, 1, 0], [0, 1, 0]];
+  let lBlockInverse3 = [[1, 1],[0, 1], [0, 1]];
 
-  jBlock = [[1, 0, 0, 0], [1, 1, 1, 0]];
-  let jBlockInverse1 = [[1, 1, 0], [1, 0, 0], [1, 0, 0]];
+  jBlock = [[1, 0, 0], [1, 1, 1]];
+  let jBlockInverse1 = [[1, 1], [1, 0, 0], [1, 0]];
   let jBlockInverse2 = [[1, 1, 1], [0, 0, 1]];
-  let jBlockInverse3 = [[0, 1, 0], [0, 1, 0],[1, 1, 0]];
+  let jBlockInverse3 = [[0, 1], [0, 1],[1, 1]];
 
 
-  zBlock = [[1, 1], [0, 1, 1, 0]];
+  zBlock = [[1, 1], [0, 1, 1]];
   let zBLockInverse1 = [[0, 1], [1, 1], [1, 0]];
 
-  sBlock = [[0, 1, 1, 0], [1, 1, 0, 0]];
+  sBlock = [[0, 1, 1], [1, 1, 0]];
   let sBlockInverse1 = [[1, 0], [1, 1], [0, 1]];
 
-  oBlock = [[1, 1, 0, 0], [1, 1, 0, 0]];
+  oBlock = [[1, 1], [1, 1]];
 
-  tBlock = [[0, 1, 0, 0], [1, 1, 1, 0]];
-  let tBlockInverse1 = [[1, 0, 0], [1, 1, 0], [1, 0, 0]];
+  tBlock = [[0, 1, 0], [1, 1, 1]];
+  let tBlockInverse1 = [[1, 0], [1, 1], [1, 0]];
   let tBlockInverse2 = [[1, 1, 1], [0, 1, 0]];
-  let tBlockInverse3 = [[0, 1, 0], [1, 1, 0], [0, 1, 0]];
+  let tBlockInverse3 = [[0, 1], [1, 1], [0, 1]];
 
   createCanvas(windowWidth, windowHeight);
 
@@ -74,8 +82,6 @@ function setup() {
   zBlockList = [zBlock, zBLockInverse1];
   sBlockList = [sBlock, sBlockInverse1];
   tBlockList = [tBlock, tBlockInverse1, tBlockInverse2, tBlockInverse3];
-
-  lockedColorValues = [8, 9, 10, 11, 12, 13, 14];
 
   //creating the grid dimesions for tetris
   gridHeight = windowHeight * 0.90;
@@ -89,18 +95,27 @@ function setup() {
   sidePadding = (windowWidth - gridWidth)/2; 
   topPadding = (windowHeight - gridHeight)/2;
 
+  nextBlockSidePadding = (windowWidth + gridWidth)/ 6;
+  nextBlockTopPadding = (windowWidth + gridHeight)/ 6;
+
   //dimensions for the next block grid
-  nextBlockCols = 
+  nextBlockCols = 4;
+  nextBlockRows = 4;
 
   grid = createEmptyGrid(COLS, ROWS);
+  predictGrid = createNextBlockGrid(nextBlockCols, nextBlockRows);
 }
 
 function draw() {
   background(220);
   displayGrid();
-  blockCreate();
-  blockDrop();
-  rotate();
+  if (startGame === true) {
+    blockCreate();
+    blockDrop();
+    rotate();
+    displayNextBlockGrid();
+    nextBlock();
+  }
 }
 
 
@@ -167,12 +182,52 @@ function displayGrid() {
         fill("red");
         stroke("white");
       }
-      if (grid[y][x === 15]) {
-        fill("grey");
+      if (grid[y][x] === 15) {
+        fill("pink");
         stroke("black");
       }
       //creating the grid with the extra side padding 
       rect(x*cellWidth + sidePadding, y*cellHeight + topPadding, cellWidth, cellHeight); 
+    }
+  }
+}
+
+function displayNextBlockGrid() {
+  for (let y = 0; y<nextBlockRows; y++) {
+    for (let x = 0; x<nextBlockCols; x++) {
+      if (predictGrid[y][x] === 0){
+        fill("black");
+        stroke("white");
+      }
+      if (predictGrid[y][x] === 1){
+        fill("turquoise");
+        stroke("white");
+      }
+      if (predictGrid[y][x] === 2){
+        fill("blue");
+        stroke("white");
+      }
+      if (predictGrid[y][x] === 3){
+        fill("orange");
+        stroke("white");
+      }
+      if (predictGrid[y][x] === 4){
+        fill("yellow");
+        stroke("white");
+      }
+      if (predictGrid[y][x] === 5){
+        fill("green");
+        stroke("white");
+      }
+      if (predictGrid[y][x] === 6){
+        fill("purple");
+        stroke("white");
+      }
+      if (predictGrid[y][x] === 7){
+        fill("red");
+        stroke("white");
+      }
+      rect(x*cellWidth + nextBlockSidePadding, y*cellHeight + nextBlockTopPadding, cellWidth, cellHeight);
     }
   }
 }
@@ -213,36 +268,43 @@ function blockDrop() {
       finalShape = block;
       finalOrientation = blockOrientation;
     }
-    if (rotateCount === 0 && yCor >= ROWS - block.length) {
+    if (rotateCount === 0 && yCor >= ROWS - block.length && !rightKey && !leftKey) {
       createBlock = true;
       dropping = false;
       stagnant();
       respawnBlock();
     }
-    if (rotateCount !== 0 && yCor >= ROWS - blockOrientation.length) {
+    if (rotateCount !== 0 && yCor >= ROWS - blockOrientation.length && !rightKey && !leftKey) {
       createBlock = true;
       dropping = false;
       stagnant();
       respawnBlock();
     }
-    if (rotateCount === 0) {
+
+    if (rotateCount === 0 && !rightKey && !leftKey) {
       for (let i = 0; i <= block[0].length; i++) {
-        if (grid[yCor + block.length][xCor + i] !== 0 && xCor>= 0 && xCor < COLS - block[0].length) {
-          dropping = false;
-          stagnant();
-          respawnBlock();
+        for (let j = 0; j <= block.length; j++) {
+          if (grid[yCor + j][xCor + i] !== 0 && (xCor>= 0 && xCor < COLS - block[0].length) && grid[yCor + j][xCor + i] !== blockColor) {
+            dropping = false;
+            stagnant();
+            respawnBlock();
+          }
         }
       }
     }
-    if (rotateCount !== 0) {
+    
+    if (rotateCount !== 0 && !rightKey && !leftKey) {
       for (let i = 0; i <= blockOrientation[0].length; i++) {
-        if (grid[yCor + blockOrientation.length][xCor + i] !== 0 && xCor>= 0 && xCor < COLS - blockOrientation[0].length) {
-          dropping = false;
-          stagnant();
-          respawnBlock();
+        for (let j = 0; j <= block.length; j++) {
+          if (grid[yCor + blockOrientation.length][xCor + i] !== 0 && xCor>= 0 && xCor < COLS - blockOrientation[0].length) {
+            dropping = false;
+            stagnant();
+            respawnBlock();
+          }
         }
       }
     }
+
     if (downKey === true) {
       newPosition();
       yCor++;
@@ -254,19 +316,24 @@ function blockDrop() {
 
 //
 function keyPressed() {
-  if (xCor < COLS - 4){
+  if (xCor <= COLS - blockLength - 2 && rotateCount === 0){
     if (keyCode === RIGHT_ARROW) {
-      if (rotateCount === 0) {
-        newPosition();
-      }
-      if (rotateCount !==0) {
-        newPositionOrient();
-      }
+      newPosition();
       rightKey = true;
       createBlock = true;
       xCor++;
     }
   }
+
+  if (xCor <= COLS - blockLengthOrient - 2 && rotateCount !== 0){
+    if (keyCode === RIGHT_ARROW) {
+      newPositionOrient();
+      rightKey = true;
+      createBlock = true;
+      xCor++;
+    }
+  }
+  
   if (xCor>= 0) {
     if (keyCode === LEFT_ARROW) {
       if (rotateCount === 0) {
@@ -281,9 +348,12 @@ function keyPressed() {
     }
   }
   if (keyCode === ENTER) {
+    startGame = true; 
     createBlock = true;
+    displayPrediction = true;
     newPosition();
     block = blockList[Math.floor(Math.random()*blockList.length)];
+    block2 = blockList[Math.floor(Math.random()*blockList.length)];
     dropping = true;
     dropTime = millis();
     timer = 1000;
@@ -292,16 +362,15 @@ function keyPressed() {
     timer = 150;
     newPosition();
   }
-  if (keyCode === UP_ARROW) {
-    if (rotateCount === 0) {
+  if (keyCode === UP_ARROW && yCor < 16 && xCor <= COLS - blockLength - 2) {
+    if (rotateCount === 0 && block !== oBlock) {
       newPosition();
     }
-    if (rotateCount !==0) {
+    if (rotateCount !== 0 && block !== oBlock) {
       newPositionOrient();
     }
     upKey = true; 
     createBlock = true;
-    counter++;
   }
 }
 
@@ -355,6 +424,30 @@ function colorPickPerma() {
   }
 }
 
+function block2Color() {
+  if (block2 === iBlock) {
+    blockColor2 = 1;
+  }
+  if (block2 === lBlock) {
+    blockColor2 = 2;
+  }
+  if (block2 === jBlock) {
+    blockColor2 = 3;
+  }
+  if (block2 === zBlock) {
+    blockColor2 = 4;
+  }
+  if (block2 === sBlock) {
+    blockColor2 = 5;
+  }
+  if (block2 === oBlock) {
+    blockColor2 = 6;
+  }
+  if (block2 === tBlock) {
+    blockColor2 = 7;
+  }
+}
+
 //clears previous postion of the tetris block
 function newPosition() {
   if (rightKey || leftKey || upKey || dropping) {
@@ -383,6 +476,19 @@ function newPositionOrient() {
   }
 }
 
+function newShape() {
+  if (stopped) {
+    for (let i = 0; i <= 4; i++) {
+      for (let j = 0; j <= block2.length; j++) {
+        if (predictGrid[predictY + j][predictX + i] !== 0) {
+          predictGrid[predictY + j][predictX + i] = 0;
+          stopped = false;
+        }
+      }
+    }
+  }
+}
+
 
 function blockCreate() {
   //I-Block creation 
@@ -398,7 +504,10 @@ function blockCreate() {
           yCor++;
         }
         for (let j = 0; j < block[i].length; j++) {
-          xCor++;
+          blockLength = block[i].length;
+          if (j > 0){
+            xCor++;
+          }
           if (block[i][j] === 1) {
             grid[yCor][xCor] = blockColor;
           }
@@ -417,7 +526,10 @@ function blockCreate() {
           yCor++;
         }
         for (let j = 0; j < blockOrientation[i].length; j++) {
-          xCor++;
+          blockLengthOrient = blockOrientation[i].length;
+          if (j > 0){
+            xCor++;
+          }
           if (blockOrientation[i][j] === 1) {
             grid[yCor][xCor] = blockColor;
           }
@@ -460,7 +572,10 @@ function blockCreate() {
         yCor++;
       }
       for (let j = 0; j < blockOrientation[i].length; j++) {
-        xCor++;
+        blockLengthOrient = blockOrientation[i].length;
+        if (j > 0){
+          xCor++;
+        }
         if (blockOrientation[i][j] === 1) {
           grid[yCor][xCor] = blockColor;
         }
@@ -476,7 +591,7 @@ function blockCreate() {
   downKey = false;
 }
 
-//keeps track of the rotations and when to rest the counter to 0
+//keeps track of the rotations and when at rest sets the counter to 0
 function rotation() { 
   if (upKey) {
     rotateCount++;
@@ -494,14 +609,17 @@ function rotation() {
 
 //respawns a block when there are no blocks in play
 function respawnBlock() {
+  // comboLine();
   yCor = 0; 
   xCor = 6;
   console.log("spawned");
-  block = blockList[Math.floor(Math.random()*blockList.length)];
+  block = block2;
   dropping = true;
   dropTime = millis();
   timer = 1000;
   rotateCount = 0;
+  block2 = blockList[Math.floor(Math.random()*blockList.length)];
+
 }
 
 //this function creates a stagnant copy of the once falling block 
@@ -509,14 +627,16 @@ function stagnant() {
   let initialX = finalXcor;
   let initialY = finalYcor;
   colorPickPerma();
-  console.log("perma");
+  stopped = true;
   if (rotateCount === 0) {
     for (let i = 0; i < finalShape.length; i++) {
       if (i > 0) {
         finalYcor++;
       }
       for (let j = 0; j < finalShape[i].length; j++) {
-        finalXcor++;
+        if (j > 0){
+          finalXcor++;
+        }
         if (finalShape[i][j] === 1) {
           grid[finalYcor][finalXcor] = permanentColor;
         }
@@ -534,7 +654,9 @@ function stagnant() {
         finalYcor++;
       }
       for (let j = 0; j < finalOrientation[i].length; j++) {
-        finalXcor++;
+        if (j > 0){
+          finalXcor++;
+        }
         if (finalOrientation[i][j] === 1) {
           grid[finalYcor][finalXcor] = permanentColor;
         }
@@ -546,7 +668,41 @@ function stagnant() {
     rightKey = false;
     leftKey = false;
   }
+  stopGame();
 }
+
+function nextBlock() {
+  let initialXPredict = predictX;
+  let initialYPredict = predictY;
+  newShape();
+  if (displayPrediction) {
+    block2Color();
+     for (let i = 0; i < block2.length; i++) {
+      if (i > 0) {
+        predictY++;
+      }
+      for (let j = 0; j < block2[i].length; j++) {
+        predictX++;
+        if (block2[i][j] === 1) {
+          predictGrid[predictY][predictX] = blockColor2;
+        }
+      }
+      predictX = initialXPredict;
+      predictY = initialYPredict;
+    }
+  }
+}
+
+function stopGame() {
+  for (let i = 0; i<2; i++) {
+    for (let j = 0; j<COLS; j++) {
+      if (grid[i][j] !== 0) {
+        startGame = false;
+      }
+    }
+  }
+}
+
 
 
 
