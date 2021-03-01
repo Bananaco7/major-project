@@ -79,7 +79,6 @@ let bgMusic;
 
 function preload() {
   bgMusic = loadSound("assets/new music.mp3");
-  tetrisImg = loadImage("assets/Tetris_image.png")
 }
 function setup() {
   //Below are 2d arrays that store each block orientation. 1 = color, 0 = no color
