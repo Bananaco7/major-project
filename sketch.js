@@ -15,7 +15,7 @@ let createBlock = false;
 let dropTime;
 let timer;
 let yCor = 0;
-let xCor = 0;
+let xCor = 6;
 let predictX = -1;
 let predictY = 1;
 let iBlock, lBlock, jBlock, zBlock, sBlock, oBlock, tBlock;
@@ -42,10 +42,15 @@ let blockCount = 0;
 let startGame = false;
 let blockLengthOrient = 0;
 let blockLength = 0;
+let gameOver = false;
+let scoreCount = 0;
+let bgMusic;
 
-
-
+// function preload() {
+//   bgMusic = loadSound("assets/background music.mp3");
+// }
 function setup() {
+  // bgMusic.loop();
   iBlock = [[1, 1, 1, 1]];
   let iBlockInverse = [[1], [1], [1], [1]];
 
@@ -107,14 +112,39 @@ function setup() {
 }
 
 function draw() {
-  background(220);
-  displayGrid();
+  if (startGame === false && gameOver === false) {
+    background("black");
+    textAlign(CENTER, CENTER);
+    textFont("Tahoma");
+    textSize(30);
+    fill("white");
+    text("TETRIS! Press ENTER to play!", width/2, height/2);
+  }
   if (startGame === true) {
+    background(0, 0, 102);
+    displayGrid();
     blockCreate();
     blockDrop();
     rotate();
     displayNextBlockGrid();
     nextBlock();
+    textAlign(CENTER, CENTER);
+    textFont("Tahoma");
+    textSize(30);
+    fill("red");
+    text("Score: " + scoreCount, width/2 + nextBlockSidePadding, height/2 + nextBlockTopPadding );
+  }
+  if (gameOver === true) {
+    startGame = false;
+    clear();
+    background(0, 0, 102);
+    resetGrid();
+    textAlign(CENTER, CENTER);
+    textFont("Tahoma");
+    textSize(30);
+    fill("red");
+    text("Your Score: " + scoreCount, width/2, height/2 + 100);
+    text("GAME OVER! Press ESCAPE to play again!", width/2, height/2);
   }
 }
 
@@ -316,7 +346,7 @@ function blockDrop() {
 
 //
 function keyPressed() {
-  if (xCor <= COLS - blockLength - 2 && rotateCount === 0){
+  if (xCor <= COLS - blockLength - 1 && rotateCount === 0){
     if (keyCode === RIGHT_ARROW) {
       newPosition();
       rightKey = true;
@@ -325,7 +355,7 @@ function keyPressed() {
     }
   }
 
-  if (xCor <= COLS - blockLengthOrient - 2 && rotateCount !== 0){
+  if (xCor <= COLS - blockLengthOrient - 1 && rotateCount !== 0){
     if (keyCode === RIGHT_ARROW) {
       newPositionOrient();
       rightKey = true;
@@ -334,7 +364,7 @@ function keyPressed() {
     }
   }
   
-  if (xCor>= 0) {
+  if (xCor> 0) {
     if (keyCode === LEFT_ARROW) {
       if (rotateCount === 0) {
         newPosition();
@@ -347,7 +377,7 @@ function keyPressed() {
       createBlock = true;
     }
   }
-  if (keyCode === ENTER) {
+  if (keyCode === ENTER && startGame === false && gameOver === false) {
     startGame = true; 
     createBlock = true;
     displayPrediction = true;
@@ -362,7 +392,7 @@ function keyPressed() {
     timer = 150;
     newPosition();
   }
-  if (keyCode === UP_ARROW && yCor < 16 && xCor <= COLS - blockLength - 2) {
+  if (keyCode === UP_ARROW && yCor < 16 && xCor <= COLS - blockLength - 1) {
     if (rotateCount === 0 && block !== oBlock) {
       newPosition();
     }
@@ -371,6 +401,11 @@ function keyPressed() {
     }
     upKey = true; 
     createBlock = true;
+  }
+  if (keyCode === ESCAPE && startGame === false) {
+    clear();
+    gameOver = false;
+    scoreCount = 0;
   }
 }
 
@@ -628,6 +663,7 @@ function stagnant() {
   let initialY = finalYcor;
   colorPickPerma();
   stopped = true;
+  scoreCount += 100;
   if (rotateCount === 0) {
     for (let i = 0; i < finalShape.length; i++) {
       if (i > 0) {
@@ -698,11 +734,22 @@ function stopGame() {
     for (let j = 0; j<COLS; j++) {
       if (grid[i][j] !== 0) {
         startGame = false;
+        gameOver = true;
       }
     }
   }
 }
 
+function resetGrid() { // resets the grid when the reset button is pressed
+  for (let x = 0; x < COLS; x++) {
+    for (let y = 0; y < ROWS; y++) {
+      if (grid[y][x] !== 0) {
+        console.log("happy");
+        grid[y][x] = 0;
+      }
+    }
+  }
+}
 
 
 

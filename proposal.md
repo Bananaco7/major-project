@@ -6,12 +6,13 @@ I want to create a basic version of tetris with all the base elements which I me
 - - Falling objects(gravity)
 - - Rotation system for the blocks
 - - Score counter
-- - Combo lines - when a horizontal line is filled clear it
+- - Randomized shapes falling with random colors
 - - Game over 
 - Music and sound effects
 
 ## Nice To Have
- - Randomized shapes falling with random colors
+ - combolines (clearlines when they are filled with blocks)
  - Speed up falling for the blocks
  - Next shape screen
+ - Proper stacking of tetris blocks
  - START Screen
