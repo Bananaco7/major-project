@@ -1,56 +1,88 @@
-// player in grid
+// TETRIS Major Project
+// Noah Lim
+// Computer Science 30, Mr. Schellenberg
+// March 1st 2021
 
+//constant values for rows and columns of main tetris grid
 let ROWS; 
 let COLS;
+
+//global variables for the dimensions the displayed grids
 let grid, cellWidth, cellHeight, predictGrid;
 let sidePadding, topPadding, nextBlockSidePadding, nextBlockTopPadding;
 let gridHeight;
 let gridWidth;
+
+//state variables that allow other functions to run when a key is pressed
 let rightKey = false;
 let leftKey = false;
 let upKey = false;
 let downKey = false;
+
+//state variables for droping the block and creating a new image of a block
 let dropping = false;
 let createBlock = false;
+
+//variables that store the millis for the amount of time it takes a block to drop
 let dropTime;
 let timer;
+
+//byfar the most important variables which keep track of the xcor and ycor of the moving block
 let yCor = 0;
 let xCor = 6;
+
+//variables which keep track of the x and y cor in the prediction grid
 let predictX = -1;
 let predictY = 1;
+
+//variables that store every possible block orientation
 let iBlock, lBlock, jBlock, zBlock, sBlock, oBlock, tBlock;
 let blockList;
 let iBlockList, lBlockList, jBlockList, zBlockList, sBlockList, oBlockList, tBlockList;
 let block, block2;
+
+//keeps track of the color of each block
 let blockColor;
 let permanentColor;
+
+//vraibles that keep track of the block's current orientation
 let blockOrientation;
 let rotateCount = 0;
-let counter;
+
+//rows and column variables for the prediction grid
 let nextBlockCols;
 let nextBlockRows;
+let displayPrediction;
+
+//state variables that keep track of the games different stages
 let respawn = false;
+let startGame = false;
+let gameOver = false;
+let stopped = false;
+
+//variables for the recreated stagnant shape when a block is not in play
 let finalShape;
 let finalXcor;
 let finalYcor;
 let finalOrientation;
 let lockedColorValues;
-let displayPrediction;
-let stopped = false;
+
+//variables that keep track of numerical values for the function of the game
 let blockColor2;
 let blockCount = 0;
-let startGame = false;
 let blockLengthOrient = 0;
 let blockLength = 0;
-let gameOver = false;
+
+//variables that contribute to user experience
 let scoreCount = 0;
 let bgMusic;
 
-// function preload() {
-//   bgMusic = loadSound("assets/background music.mp3");
-// }
+function preload() {
+  bgMusic = loadSound("assets/new music.mp3");
+  tetrisImg = loadImage("assets/Tetris_image.png")
+}
 function setup() {
-  // bgMusic.loop();
+  //Below are 2d arrays that store each block orientation. 1 = color, 0 = no color
   iBlock = [[1, 1, 1, 1]];
   let iBlockInverse = [[1], [1], [1], [1]];
 
@@ -79,7 +111,8 @@ function setup() {
   let tBlockInverse3 = [[0, 1], [1, 1], [0, 1]];
 
   createCanvas(windowWidth, windowHeight);
-
+  
+  //arrays that store each orientation possibility for each block
   blockList = [iBlock, lBlock, jBlock, zBlock, sBlock, oBlock, tBlock];
   iBlockList = [iBlock, iBlockInverse];
   lBlockList = [lBlock, lBlockInverse1, lBlockInverse2, lBlockInverse3];
@@ -96,10 +129,11 @@ function setup() {
   cellWidth = 35;
   cellHeight = 35;
 
-  //padding for the sides of the tetris grid
+  //padding for the sides and top of the tetris grid
   sidePadding = (windowWidth - gridWidth)/2; 
   topPadding = (windowHeight - gridHeight)/2;
 
+  // padding for the prediction grid
   nextBlockSidePadding = (windowWidth + gridWidth)/ 6;
   nextBlockTopPadding = (windowWidth + gridHeight)/ 6;
 
@@ -107,19 +141,24 @@ function setup() {
   nextBlockCols = 4;
   nextBlockRows = 4;
 
+  //creating normal tetris grid and prediction grid
   grid = createEmptyGrid(COLS, ROWS);
   predictGrid = createNextBlockGrid(nextBlockCols, nextBlockRows);
 }
 
 function draw() {
+  //start screen
   if (startGame === false && gameOver === false) {
     background("black");
     textAlign(CENTER, CENTER);
-    textFont("Tahoma");
-    textSize(30);
+    textFont("VT323");
+    textSize(50);
     fill("white");
     text("TETRIS! Press ENTER to play!", width/2, height/2);
+    textSize(20);
+    text("HOW TO PLAY: Use right and left arrows to move, use down arrow to hard drop, use up arrow to rotate blocks.",  width/2, height/2 + 300);
   }
+  //starts game
   if (startGame === true) {
     background(0, 0, 102);
     displayGrid();
@@ -129,26 +168,29 @@ function draw() {
     displayNextBlockGrid();
     nextBlock();
     textAlign(CENTER, CENTER);
-    textFont("Tahoma");
+    textFont("VT323");
     textSize(30);
     fill("red");
     text("Score: " + scoreCount, width/2 + nextBlockSidePadding, height/2 + nextBlockTopPadding );
   }
+  //ends game
   if (gameOver === true) {
     startGame = false;
     clear();
     background(0, 0, 102);
     resetGrid();
+    resetPredictGrid();
     textAlign(CENTER, CENTER);
-    textFont("Tahoma");
+    textFont("VT323");
     textSize(30);
     fill("red");
-    text("Your Score: " + scoreCount, width/2, height/2 + 100);
+    //displays the users score
+    text("Your Score: " + scoreCount, width/2, height/2 + 100); 
     text("GAME OVER! Press ESCAPE to play again!", width/2, height/2);
   }
 }
 
-
+//function that stores the colors for each block as a numerical value
 function displayGrid() {
   for (let y = 0; y<ROWS; y++) {
     for (let x = 0; x<COLS; x++) {
@@ -222,6 +264,7 @@ function displayGrid() {
   }
 }
 
+//function that stores colors for the prediction grid
 function displayNextBlockGrid() {
   for (let y = 0; y<nextBlockRows; y++) {
     for (let x = 0; x<nextBlockCols; x++) {
@@ -257,11 +300,13 @@ function displayNextBlockGrid() {
         fill("red");
         stroke("white");
       }
+      // dimensions with padding
       rect(x*cellWidth + nextBlockSidePadding, y*cellHeight + nextBlockTopPadding, cellWidth, cellHeight);
     }
   }
 }
 
+//creating empty tetris grid
 function createEmptyGrid(cols, rows) {
   let empty = [];
   for (let y  = 0; y < rows; y++) {
@@ -273,6 +318,7 @@ function createEmptyGrid(cols, rows) {
   return empty;
 }
 
+//creating empty prediction grid
 function createNextBlockGrid(cols, rows) {
   let empty = [];
   for (let y  = 0; y < rows; y++) {
@@ -284,6 +330,7 @@ function createNextBlockGrid(cols, rows) {
   return empty;
 }
 
+//function that allows the block to drop every 1 second
 function blockDrop() {
   // dropTime = millis();
   if (dropping) {
@@ -298,6 +345,7 @@ function blockDrop() {
       finalShape = block;
       finalOrientation = blockOrientation;
     }
+    //when the block touches the ground it stops
     if (rotateCount === 0 && yCor >= ROWS - block.length && !rightKey && !leftKey) {
       createBlock = true;
       dropping = false;
@@ -310,7 +358,7 @@ function blockDrop() {
       stagnant();
       respawnBlock();
     }
-
+    //when the block touhces another block it stops **glitchy part of code**
     if (rotateCount === 0 && !rightKey && !leftKey) {
       for (let i = 0; i <= block[0].length; i++) {
         for (let j = 0; j <= block.length; j++) {
@@ -325,8 +373,8 @@ function blockDrop() {
     
     if (rotateCount !== 0 && !rightKey && !leftKey) {
       for (let i = 0; i <= blockOrientation[0].length; i++) {
-        for (let j = 0; j <= block.length; j++) {
-          if (grid[yCor + blockOrientation.length][xCor + i] !== 0 && xCor>= 0 && xCor < COLS - blockOrientation[0].length) {
+        for (let j = 0; j <= blockOrientation.length; j++) {
+          if (grid[yCor + j][xCor + i] !== 0 && xCor>= 0 && xCor < COLS - blockOrientation[0].length && grid[yCor + j][xCor + i] !== blockColor) {
             dropping = false;
             stagnant();
             respawnBlock();
@@ -334,7 +382,7 @@ function blockDrop() {
         }
       }
     }
-
+    //speed up the dropping of the block by pressing down arrow
     if (downKey === true) {
       newPosition();
       yCor++;
@@ -344,8 +392,9 @@ function blockDrop() {
   }
 }
 
-//
+//stores all the key pressed possibilities
 function keyPressed() {
+  //sanity check so that block stays in grid for right key
   if (xCor <= COLS - blockLength - 1 && rotateCount === 0){
     if (keyCode === RIGHT_ARROW) {
       newPosition();
@@ -364,6 +413,7 @@ function keyPressed() {
     }
   }
   
+  //sanity check so block stays in grid for left key
   if (xCor> 0) {
     if (keyCode === LEFT_ARROW) {
       if (rotateCount === 0) {
@@ -377,7 +427,10 @@ function keyPressed() {
       createBlock = true;
     }
   }
+
+  //enter key only be pressed at the start of the game 
   if (keyCode === ENTER && startGame === false && gameOver === false) {
+    bgMusic.loop();
     startGame = true; 
     createBlock = true;
     displayPrediction = true;
@@ -388,10 +441,14 @@ function keyPressed() {
     dropTime = millis();
     timer = 1000;
   }
+  
+  //down arrow sets a new time value for the dropping of blocks
   if (keyCode === DOWN_ARROW) {
     timer = 150;
     newPosition();
   }
+  
+  //sanity check for the rotation of blocks
   if (keyCode === UP_ARROW && yCor < 16 && xCor <= COLS - blockLength - 1) {
     if (rotateCount === 0 && block !== oBlock) {
       newPosition();
@@ -402,8 +459,11 @@ function keyPressed() {
     upKey = true; 
     createBlock = true;
   }
+
+  //when escape key is pressed go back to start screen
   if (keyCode === ESCAPE && startGame === false) {
     clear();
+    bgMusic.stop();
     gameOver = false;
     scoreCount = 0;
   }
@@ -459,6 +519,7 @@ function colorPickPerma() {
   }
 }
 
+//creates colors for the prediction grid
 function block2Color() {
   if (block2 === iBlock) {
     blockColor2 = 1;
@@ -490,7 +551,6 @@ function newPosition() {
       for (let j = 0; j <= block.length; j++) {
         if (grid[yCor + j][xCor + i] === blockColor) {
           grid[yCor + j][xCor + i] = 0;
-          console.log("yup");
         }
       }
     }
@@ -504,13 +564,13 @@ function newPositionOrient() {
       for (let j = 0; j <= blockOrientation.length; j++) {
         if (grid[yCor + j][xCor + i] === blockColor) {
           grid[yCor + j][xCor + i] = 0;
-          console.log("yup");
         }
       }
     }
   }
 }
 
+//clears the previous blocks in the predict grid
 function newShape() {
   if (stopped) {
     for (let i = 0; i <= 4; i++) {
@@ -527,10 +587,9 @@ function newShape() {
 
 function blockCreate() {
   //I-Block creation 
-  let initialX = xCor;
+  let initialX = xCor; //goes back to inital x position so that x cor and y cor doesn't change unless a key is pressed
   let initialY = yCor;
   if (createBlock && !upKey) {
-    console.log("yes");
     colorPick();
     //if statement for the creation of block when it is not in a rotated position
     if (rotateCount === 0) {
@@ -580,7 +639,6 @@ function blockCreate() {
   //if statement for the creation of rotated block, it creates the next rotation for the block when up key is pressed
   if (createBlock && upKey && block !== oBlock) {
     newPosition();
-    console.log("works");
     rotation();
     colorPick();
     if (block === iBlock) {
@@ -647,7 +705,6 @@ function respawnBlock() {
   // comboLine();
   yCor = 0; 
   xCor = 6;
-  console.log("spawned");
   block = block2;
   dropping = true;
   dropTime = millis();
@@ -665,6 +722,7 @@ function stagnant() {
   stopped = true;
   scoreCount += 100;
   if (rotateCount === 0) {
+    //same loops as the previous create block functions
     for (let i = 0; i < finalShape.length; i++) {
       if (i > 0) {
         finalYcor++;
@@ -684,6 +742,7 @@ function stagnant() {
     rightKey = false;
     leftKey = false;
   }
+  //have to use a different variable for the rotated block lengths
   else if (rotateCount > 0 ) {
     for (let i = 0; i < finalOrientation.length; i++) {
       if (i > 0) {
@@ -707,6 +766,7 @@ function stagnant() {
   stopGame();
 }
 
+//function to create a new block in the prediction grid
 function nextBlock() {
   let initialXPredict = predictX;
   let initialYPredict = predictY;
@@ -729,6 +789,7 @@ function nextBlock() {
   }
 }
 
+//function that stops the game
 function stopGame() {
   for (let i = 0; i<2; i++) {
     for (let j = 0; j<COLS; j++) {
@@ -740,12 +801,23 @@ function stopGame() {
   }
 }
 
-function resetGrid() { // resets the grid when the reset button is pressed
+//resets the grid when the reset button is pressed
+function resetGrid() { 
   for (let x = 0; x < COLS; x++) {
     for (let y = 0; y < ROWS; y++) {
       if (grid[y][x] !== 0) {
-        console.log("happy");
         grid[y][x] = 0;
+      }
+    }
+  }
+}
+
+//resets the predict grid when reset button is pressed
+function resetPredictGrid() { 
+  for (let x = 0; x < nextBlockCols; x++) {
+    for (let y = 0; y < nextBlockRows; y++) {
+      if (predictGrid[y][x] !== 0) {
+        predictGrid[y][x] = 0;
       }
     }
   }
